@@ -1,0 +1,88 @@
+[project]
+name = "support-desk-agent"
+version = "0.1.0"
+description = "Production-ready multi-agent customer support desk (FastAPI + LangGraph)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # --- Web / API ---
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "slowapi>=0.1.9",
+    # --- Config / validation ---
+    "pydantic[email]>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "python-dotenv>=1.0.1",
+    # --- Auth ---
+    "python-jose[cryptography]>=3.3.0",
+    "bcrypt>=4.2.0",
+    # --- LangGraph / LangChain ---
+    "langgraph>=0.2.50",
+    "langgraph-checkpoint-postgres>=2.0.0",
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
+    # --- Database / vector ---
+    "sqlmodel>=0.0.22",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "psycopg[binary]>=3.2.0",
+    "psycopg2-binary>=2.9.9",
+    "pgvector>=0.3.0",
+    "alembic>=1.13.0",
+    # --- Embeddings (local, CPU) ---
+    "fastembed>=0.4.0",
+    # --- Resilience / observability ---
+    "tenacity>=9.0.0",
+    "structlog>=24.4.0",
+    "prometheus-client>=0.21.0",
+    "langfuse>=2.53.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.27.0",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+]
+evals = [
+    "ragas>=0.2.0",
+    "datasets>=3.0.0",
+    # Pinned <0.4: ragas.llms.base unconditionally does
+    # `from langchain_community.chat_models.vertexai import ChatVertexAI`, a module
+    # removed in langchain-community 0.4.x (split into standalone integration
+    # packages). >=0.4 breaks the import entirely with no ragas-side fix yet.
+    "langchain-community>=0.3.0,<0.4.0",
+]
+ui = [
+    "streamlit>=1.40.0",
+    "httpx>=0.27.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = ["integration: requires the running Docker stack"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "ASYNC"]
+ignore = ["E501", "B008"]  # B008: FastAPI Depends() in defaults is idiomatic
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]

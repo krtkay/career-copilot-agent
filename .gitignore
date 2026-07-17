@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Env / secrets
+.env
+.env.*
+
+# Models / caches
+.fastembed_cache/
+*.onnx
+
+# Reports (keep the dir, ignore generated files)
+evals/reports/*
+!evals/reports/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+
+# Local exports/scratch files, not part of the tracked project
+*.pdf

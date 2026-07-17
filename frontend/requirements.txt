@@ -1,0 +1,4 @@
+# Minimal deps to run just the Streamlit frontend (talks to the API over HTTP).
+# The frontend needs nothing from the backend package.
+streamlit>=1.40.0
+httpx>=0.27.0
