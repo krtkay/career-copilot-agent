@@ -17,7 +17,7 @@ services:
     # no separate one-off "pre-deploy" step and no SSH access to run one by
     # hand — unlike the Oracle path, where alembic is a deliberate, separate
     # CI step (see docker-compose.prod.yml / docs/deployment.md history).
-    startCommand: >-
+    dockerCommand: >-
       sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
     envVars:
       - key: APP_ENV

@@ -89,7 +89,7 @@ and want the always-on, fully-observable setup.
    `render.yaml`) — you never need to produce or copy this one yourself.
 
 3. **Create Web Service.** Render builds the existing `Dockerfile` and
-   starts the container with the `startCommand` from `render.yaml`:
+   starts the container with the `dockerCommand` from `render.yaml`:
    `alembic upgrade head && uvicorn ...` — migrations run automatically on
    every boot (safe: `alembic upgrade head` is a no-op once already at head).
 
