@@ -17,8 +17,10 @@ services:
     # no separate one-off "pre-deploy" step and no SSH access to run one by
     # hand — unlike the Oracle path, where alembic is a deliberate, separate
     # CI step (see docker-compose.prod.yml / docs/deployment.md history).
-    dockerCommand: >-
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+    # Logic lives in render-start.sh, not inline here: an inline
+    # "cmd1 && cmd2" string wasn't interpreted as shell syntax by Render's
+    # dockerCommand — it ran as one literal (non-existent) command instead.
+    dockerCommand: sh render-start.sh
     envVars:
       - key: APP_ENV
         value: production
