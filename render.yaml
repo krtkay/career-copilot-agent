@@ -69,3 +69,21 @@ services:
         sync: false
       - key: ADZUNA_APP_KEY
         sync: false
+
+  - type: web
+    name: career-copilot-frontend
+    runtime: docker
+    dockerContext: .
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    healthCheckPath: /_stcore/health
+    # See frontend/render-start.sh — Streamlit's Dockerfile CMD hardcodes port
+    # 8501 for local docker-compose; Render assigns its own $PORT instead.
+    dockerCommand: sh frontend/render-start.sh
+    envVars:
+      # The FastAPI backend's public URL (the career-copilot-api service
+      # above) — httpx calls happen server-side in Streamlit's Python
+      # process, not the browser, so this is a plain HTTPS URL, not a CORS
+      # concern. Set after the API service has its own URL assigned.
+      - key: API_BASE_URL
+        sync: false
