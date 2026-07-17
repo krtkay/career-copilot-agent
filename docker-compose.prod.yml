@@ -1,0 +1,92 @@
+# Production compose file — pulls a pre-built image (from CI), no local build,
+# no dev bind-mounts, no host-exposed internal ports (db/prometheus/grafana stay
+# on the Docker network only; Caddy is the only public-facing service).
+#
+# Usage on the VM (see docs/deployment.md):
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
+#   docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set a real password in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-career_copilot}
+    # Loopback-only: reachable from the VM itself (e.g. an SSH tunnel for
+    # `psql`), never from the network — even if a firewall rule is missed.
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-career_copilot}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${API_IMAGE:-ghcr.io/krtkay/career-copilot-agent:latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Override host so the API reaches Postgres by service name inside the network.
+      POSTGRES_HOST: db
+    # Loopback-only: Caddy proxies 443 -> here; this also lets the deploy
+    # script's health-check curl reach the API directly from the VM.
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    # Loopback-only: reach it via `ssh -L 9090:localhost:9090 <vm>`.
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set a real password in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    # Loopback-only: reach it via `ssh -L 3000:localhost:3000 <vm>`.
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  prometheus_data:
+  grafana_data:
+  caddy_data:
+  caddy_config:

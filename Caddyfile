@@ -1,0 +1,19 @@
+# Automatic HTTPS via Let's Encrypt — no manual cert management.
+#
+# Replace the placeholder below with your VM's reserved public IP written in
+# sslip.io form: 203-0-113-10.sslip.io resolves to 203.0.113.10 with no DNS
+# setup required. See docs/deployment.md step "Point a hostname at the VM".
+#
+# {$DEPLOY_HOSTNAME} lets this be overridden via an env var if you later move
+# to a real domain — Caddy re-issues the cert automatically either way.
+
+{$DEPLOY_HOSTNAME:203-0-113-10.sslip.io} {
+	reverse_proxy api:8000
+
+	encode gzip
+
+	log {
+		output stdout
+		format json
+	}
+}
