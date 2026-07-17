@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import bcrypt
@@ -27,7 +27,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(subject: str, extra: dict[str, Any] | None = None) -> str:
     """Mint a signed JWT for ``subject`` (the user id)."""
-    expire = datetime.now(timezone.utc) + timedelta(
+    expire = datetime.now(UTC) + timedelta(
         minutes=settings.jwt_access_token_expire_minutes
     )
     payload: dict[str, Any] = {"sub": subject, "exp": expire, **(extra or {})}

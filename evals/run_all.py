@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.logging import configure_logging, get_logger
 from evals import guardrail_eval, ragas_eval, routing_eval
@@ -53,7 +53,7 @@ async def main() -> int:
     passed = all(c[3] for c in checks) if checks else True
     lines = [
         "# Eval Report",
-        f"_Generated {datetime.now(timezone.utc).isoformat()}_\n",
+        f"_Generated {datetime.now(UTC).isoformat()}_\n",
         "## Summary",
         "| Metric | Value | Threshold | Pass |",
         "| --- | --- | --- | --- |",
@@ -72,7 +72,7 @@ async def main() -> int:
     ]
 
     combined = {
-        "generated": datetime.now(timezone.utc).isoformat(),
+        "generated": datetime.now(UTC).isoformat(),
         "passed": passed,
         "routing": routing,
         "guardrails": guardrails,

@@ -22,7 +22,7 @@ from app.core.metrics import GUARDRAIL_BLOCK_COUNT
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 _STOP = frozenset(
-    "the a an and or of to for in on at is are be this that with your you it as we".split()
+    ["the", "a", "an", "and", "or", "of", "to", "for", "in", "on", "at", "is", "are", "be", "this", "that", "with", "your", "you", "it", "as", "we"]
 )
 
 

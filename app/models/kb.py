@@ -13,7 +13,7 @@ keyword, fused with RRF) a single, index-backed query set.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pgvector.sqlalchemy import Vector
@@ -33,7 +33,7 @@ class KBDocument(SQLModel, table=True):
     title: str = Field(index=True)
     source: str = Field(description="Origin file / URL of the article.")
     category: str = Field(default="general", index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class KBChunk(SQLModel, table=True):

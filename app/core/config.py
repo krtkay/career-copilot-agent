@@ -176,7 +176,7 @@ class Settings(BaseSettings):
         return v
 
     @model_validator(mode="after")
-    def _validate_production_safety(self) -> "Settings":
+    def _validate_production_safety(self) -> Settings:
         """Fail fast in production if insecure defaults were left in place."""
         if self.app_env == Environment.PRODUCTION:
             if self.jwt_secret_key.get_secret_value().startswith("change-me"):

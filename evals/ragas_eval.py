@@ -22,7 +22,7 @@ Or cap any golden file to the first N questions:
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -75,16 +75,16 @@ def _score_with_ragas(samples: list[dict]) -> dict:
     """Score with RAGAS if installed; otherwise fall back to a lexical proxy."""
     try:
         from datasets import Dataset
+        from langchain_openai import ChatOpenAI
         from ragas import evaluate
+        from ragas.embeddings import LangchainEmbeddingsWrapper
+        from ragas.llms import LangchainLLMWrapper
         from ragas.metrics import (
             answer_relevancy,
             context_precision,
             context_recall,
             faithfulness,
         )
-        from ragas.llms import LangchainLLMWrapper
-        from ragas.embeddings import LangchainEmbeddingsWrapper
-        from langchain_openai import ChatOpenAI
 
         provider = settings.llm_providers()[0]
         eval_llm = LangchainLLMWrapper(
@@ -155,7 +155,7 @@ async def main(golden_file: str = "rag_golden.jsonl", limit: int | None = None) 
     scored = _score_with_ragas(samples)
     report = {
         "suite": "ragas",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "golden_file": golden_file,
         "n_samples": len(samples),
         **scored,

@@ -8,7 +8,7 @@ Run:  python -m evals.guardrail_eval
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.guardrails import check_input, check_output
 from app.core.logging import configure_logging, get_logger
@@ -45,7 +45,7 @@ def main() -> dict:
     denom_r = tp + fn
     report = {
         "suite": "guardrails",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "n": len(rows),
         "precision": round(tp / denom_p, 3) if denom_p else 1.0,
         "recall": round(tp / denom_r, 3) if denom_r else 1.0,

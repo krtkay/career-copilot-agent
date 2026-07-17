@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -64,7 +64,7 @@ async def main(golden_file: str = "routing_golden.jsonl", limit: int | None = No
     accuracy = correct / max(len(rows), 1)
     report = {
         "suite": "routing",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "golden_file": golden_file,
         "n": len(rows),
         "accuracy": round(accuracy, 3),
