@@ -144,6 +144,10 @@ make eval        # routing accuracy + guardrail precision + RAGAS over 95 golden
 - [`docs/guardrails.md`](docs/guardrails.md) — guardrail design
 - [`docs/getting-started.md`](docs/getting-started.md) — setup + troubleshooting
 - [`docs/langfuse.md`](docs/langfuse.md) — enable LLM tracing with Langfuse
+- [`docs/render-quickstart.md`](docs/render-quickstart.md) — deploy a free, shareable
+  link in minutes (Render + Neon, no credit card)
+- [`docs/deployment.md`](docs/deployment.md) — full production CI/CD pipeline
+  (Oracle Cloud + GitHub Actions + GHCR, always-on with full observability)
 - [`CLAUDE.md`](CLAUDE.md) — guidance for editing/debugging with Claude Code
 - [`RUNBOOK.md`](RUNBOOK.md) — step-by-step run & validation (adapt the domain examples)
 
