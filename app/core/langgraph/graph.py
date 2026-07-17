@@ -101,14 +101,35 @@ class GraphManager:
 
     def __init__(self) -> None:
         self._graph = None
-        self._cm = None  # async context manager for the checkpointer
+        self._pool = None  # AsyncConnectionPool backing the checkpointer
 
     async def startup(self) -> None:
         try:
             from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+            from psycopg.rows import dict_row
+            from psycopg_pool import AsyncConnectionPool
 
-            self._cm = AsyncPostgresSaver.from_conn_string(settings.checkpointer_dsn)
-            saver = await self._cm.__aenter__()
+            # A single long-lived connection (the previous approach, via
+            # AsyncPostgresSaver.from_conn_string) goes stale against a
+            # serverless/autosuspending Postgres (e.g. Neon's free tier):
+            # once the provider closes the connection server-side, every
+            # later request fails with `psycopg.OperationalError: the
+            # connection is closed` until the whole process restarts. A pool
+            # checks a connection's health on checkout (`check=`) and
+            # recycles idle ones proactively (`max_idle` shorter than Neon's
+            # own ~5-minute autosuspend window), so a killed connection gets
+            # transparently replaced instead of reused.
+            self._pool = AsyncConnectionPool(
+                conninfo=settings.checkpointer_dsn,
+                min_size=1,
+                max_size=5,
+                kwargs={"autocommit": True, "prepare_threshold": 0, "row_factory": dict_row},
+                check=AsyncConnectionPool.check_connection,
+                max_idle=240,
+                open=False,
+            )
+            await self._pool.open()
+            saver = AsyncPostgresSaver(conn=self._pool)
             await saver.setup()
             self._graph = build_graph(checkpointer=saver)
             logger.info("graph_ready", checkpointer="postgres")
@@ -119,8 +140,8 @@ class GraphManager:
             self._graph = build_graph(checkpointer=MemorySaver())
 
     async def shutdown(self) -> None:
-        if self._cm is not None:
-            await self._cm.__aexit__(None, None, None)
+        if self._pool is not None:
+            await self._pool.close()
 
     @property
     def graph(self):
